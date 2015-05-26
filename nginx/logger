@@ -1,0 +1,20 @@
+server {
+	listen 8000;
+	root /var/www/web_app/dist;
+	index index.html;
+
+	location / {
+		try_files $uri /index.html;
+	}
+
+	location /subscribe {
+		proxy_pass http://logger:8080;
+		proxy_buffering off;
+		proxy_cache off;
+		proxy_read_timeout 1d;
+	}
+
+	location /load {
+		proxy_pass http://logger:8080;
+	}
+}

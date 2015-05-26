@@ -1,0 +1,32 @@
+{
+    "template" : "*",
+    "settings" : {
+        "number_of_shards" : 4,
+        "number_of_replicas" : 0
+    },
+    "mappings" : {
+        "irc" : {
+            "_source" : {
+                "enabled" : true
+            },
+            "properties" : {
+                "id" : {
+                    "type" : "string",
+                    "index" : "no"
+                },
+                "from" : {
+                    "type" : "string"
+                },
+                "type" : {
+                    "type" : "string"
+                },
+                "date" : {
+                    "type" : "date"
+                },
+                "message" : {
+                    "type" : "string"
+                }
+            }
+        }
+    }
+}

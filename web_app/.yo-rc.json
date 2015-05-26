@@ -1,0 +1,7 @@
+{
+  "generator-react-webpack": {
+    "app-name": "ircLogs",
+    "architecture": false,
+    "styles-language": "less"
+  }
+}

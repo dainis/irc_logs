@@ -1,0 +1,7 @@
+FROM ubuntu
+
+EXPOSE 8080
+
+COPY bin/irc_logs /
+
+CMD ["/irc_logs", "-es", "http://elasticsearch:9200"]
