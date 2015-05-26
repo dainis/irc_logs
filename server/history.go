@@ -40,7 +40,7 @@ func (history *ElasticHistory) GetLastMessages(count int) ([]byte, error) {
 	result, err := history.client.Search().
 		Index(history.index).
 		Type(TYPE).
-		Sort("Date", false).
+		Sort("date", true).
 		From(0).Size(count).
 		Do()
 
