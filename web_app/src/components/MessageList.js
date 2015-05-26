@@ -18,7 +18,7 @@ var MessageList = React.createClass({
             var lastElement = $('.MessageList .Message').last()[0];
 
             if(lastElement) {
-                lastElement.last()[0].scrollIntoView();
+                lastElement.scrollIntoView();
             }
 
             this.firstScroll = true;
@@ -31,7 +31,6 @@ var MessageList = React.createClass({
 
         return (
             <div className="MessageList">
-                <span>There are {this.props.messages.length} messages</span>
                 <ul>
                     {this.props.messages.map(createMessage)}
                 </ul>

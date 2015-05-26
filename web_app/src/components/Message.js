@@ -12,8 +12,8 @@ var Message = React.createClass({
 
         return (
             <div className="Message">
-                <span>From {message.from} @ {d}</span>
-                <p>{message.message}</p>
+                <span className="Header">{message.from} @ {d}</span>
+                <p className="Body">{message.message}</p>
             </div>
         );
     }
