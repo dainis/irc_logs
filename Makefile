@@ -15,5 +15,11 @@ push: docker
 	docker push dainis/irc_logs_server
 	docker push dainis/irc_logs_static
 
-.PHONY: build_webapp docker push
+updatedeps:
+	go list ./... \
+		| go list -f '{{join .Deps "\n"}}' \
+		| grep -v github.com/dainis/irc_logs \
+		| xargs go get -f -u -v
+
+.PHONY: build_webapp docker push updatedeps
 
