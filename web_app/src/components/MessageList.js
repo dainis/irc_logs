@@ -26,7 +26,7 @@ var MessageList = React.createClass({
     },
     render: function () {
         function createMessage(m) {
-            return (<Message message={m}/>);
+            return (<Message key={m.id} message={m}/>);
         }
 
         return (

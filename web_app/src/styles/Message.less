@@ -1,15 +1,27 @@
 @dark-color: #707070;
+@font-family : monospace;
 
 .Message {
   border-top: 1px solid @dark-color;
-  padding-top : 10px
-}
-
-.Message p {
-	word-break : break-all;
+  padding : 10px 0;
 }
 
 .Message .Header {
     font-size: 0.75em;
     color: @dark-color;
+    font-family: @font-family;
+    display: inline-block;
+    overflow-wrap: break:word;
+    width: 250px;
+}
+
+.Message .Seperator {
+    font-size: 0.75em;
+    color: @dark-color;
+    font-family: @font-family;
+}
+
+.Message .Body {
+	word-break : break-all;
+    font-family: @font-family;
 }
