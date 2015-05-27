@@ -13,7 +13,8 @@
     "jquery": "^2.1.4",
     "moment": "^2.10.2",
     "normalize.css": "~3.0.3",
-    "react": "~0.12.2"
+    "react": "~0.12.2",
+    "react-autolink": "^0.2.0"
   },
   "devDependencies": {
     "grunt": "~0.4.5",
