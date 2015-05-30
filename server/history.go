@@ -40,7 +40,7 @@ func (history *ElasticHistory) GetLastMessages(count int) ([]byte, error) {
 	result, err := history.client.Search().
 		Index(history.index).
 		Type(TYPE).
-		Sort("date", true).
+		Sort("date", false).
 		From(0).Size(count).
 		Do()
 
@@ -48,16 +48,28 @@ func (history *ElasticHistory) GetLastMessages(count int) ([]byte, error) {
 		return nil, err
 	}
 
-	log.Printf("Fetched %d entries\n", result.TotalHits())
+	resultCnt := len(result.Hits.Hits)
 
-	resultSlice := make([]Message, result.TotalHits(), result.TotalHits())
+	log.Printf("Fetched %d entries\n", resultCnt)
+
+	resultSlice := make([]Message, resultCnt, resultCnt)
 	var tmpMessage Message
 
 	for i, m := range result.Each(reflect.TypeOf(tmpMessage)) {
 		resultSlice[i] = m.(Message)
 	}
 
+	reverseHistory(resultSlice)
+
 	return json.Marshal(resultSlice)
+}
+
+func reverseHistory(result []Message) {
+	for i, j := 0, len(result)-1; i < j; i, j = i+1, j-1 {
+		tmp := result[i]
+		result[i] = result[j]
+		result[j] = tmp
+	}
 }
 
 func (history *ElasticHistory) GetChannel() chan *Message {
