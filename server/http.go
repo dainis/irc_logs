@@ -31,7 +31,20 @@ func NewHTTP(history *ElasticHistory, port int) *HTTP {
 
 func (h *HTTP) getLoadHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		messages, err := h.history.GetLastMessages(250)
+		from := r.URL.Query().Get("from")
+		to := r.URL.Query().Get("to")
+
+		if from == "" {
+			from = "now-24h"
+		}
+
+		if to == "" {
+			to = "now"
+		}
+
+		log.Printf("Will fetch history from : %s to : %s", from, to)
+
+		messages, err := h.history.GetMessagesBetween(from, to)
 
 		if err != nil {
 			errStr, _ := json.Marshal(map[string]string{"error": "try again"})

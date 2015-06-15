@@ -36,12 +36,15 @@ func NewElasticHistory(host string, index string) *ElasticHistory {
 	return history
 }
 
-func (history *ElasticHistory) GetLastMessages(count int) ([]byte, error) {
+func (history *ElasticHistory) GetMessagesBetween(from, to string) ([]byte, error) {
+	rangeQuery := elastic.NewRangeQuery("date").From(from).To(to)
+
 	result, err := history.client.Search().
 		Index(history.index).
 		Type(TYPE).
+		Query(&rangeQuery).
 		Sort("date", false).
-		From(0).Size(count).
+		From(0).Size(10000). //this is cheating :(
 		Do()
 
 	if err != nil {
@@ -62,6 +65,7 @@ func (history *ElasticHistory) GetLastMessages(count int) ([]byte, error) {
 	reverseHistory(resultSlice)
 
 	return json.Marshal(resultSlice)
+
 }
 
 func reverseHistory(result []Message) {

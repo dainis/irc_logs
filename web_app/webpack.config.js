@@ -1,31 +1,31 @@
 /*
- * Webpack development server configuration
+ * Webpack distribution configuration
  *
- * This file is set up for serving the webpack-dev-server, which will watch for changes and recompile as required if
- * the subfolder /webpack-dev-server/ is visited. Visiting the root will not automatically reload.
+ * This file is set up for serving the distribution version. It will be compiled to dist/ by default
  */
+
 'use strict';
+
 var webpack = require('webpack');
 
 module.exports = {
 
   output: {
-    filename: 'main.js',
-    publicPath: '/assets/'
+    publicPath: '/assets/',
+    path: 'dist/assets/',
+    filename: 'main.js'
   },
 
   cache: true,
   debug: true,
   devtool: false,
-  entry: [
-      'webpack/hot/only-dev-server',
-      './src/components/IrcLogsApp.js'
-  ],
+  entry: './src/components/IrcLogsApp.js',
 
   stats: {
     colors: true,
     reasons: true
   },
+
 
   resolve: {
     extensions: ['', '.js'],
@@ -35,31 +35,31 @@ module.exports = {
       'components': __dirname + '/src/components/'
     }
   },
+
   module: {
     preLoaders: [{
       test: /\.js$/,
       exclude: /node_modules/,
       loader: 'jsxhint'
     }],
+
     loaders: [{
       test: /\.js$/,
       exclude: /node_modules/,
       loader: 'react-hot!babel-loader'
     }, {
-      test: /\.less/,
-      loader: 'style-loader!css-loader!less-loader'
-    }, {
       test: /\.css$/,
       loader: 'style-loader!css-loader'
+    }, {
+      test: /\.less/,
+      loader: 'style-loader!css-loader!less-loader'
     }, {
       test: /\.(png|jpg|woff|woff2|gif)$/,
       loader: 'url-loader?limit=8192'
     }]
   },
-
-  plugins: [
+  plugins : [
     new webpack.HotModuleReplacementPlugin(),
     new webpack.NoErrorsPlugin()
   ]
-
 };
