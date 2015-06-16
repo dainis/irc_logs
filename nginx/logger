@@ -1,6 +1,6 @@
 server {
 	listen 8000;
-	root /var/www/web_app/dist;
+	root /home/dainis/golang/src/github.com/dainis/irc_logs/web_app/dist;
 	index index.html;
 
 	location / {
@@ -8,13 +8,21 @@ server {
 	}
 
 	location /subscribe {
-		proxy_pass http://logger:8080;
+		proxy_pass http://localhost:8080;
 		proxy_buffering off;
 		proxy_cache off;
 		proxy_read_timeout 1d;
 	}
 
 	location /load {
-		proxy_pass http://logger:8080;
+		proxy_pass http://localhost:8080;
+	}
+
+	location /stats/histogram {
+		proxy_pass http://localhost:8080;
+	}
+
+	location /stats/top {
+		proxy_pass http://localhost:8080;
 	}
 }

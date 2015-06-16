@@ -14,7 +14,8 @@ var DatePicker = React.createClass({
             </div>
         );
     },
-    clickHandler : function(days) {
+    clickHandler : function(days, e) {
+        e.preventDefault();
         this.props.dateChangeCallback(days);
     }
 });

@@ -2,10 +2,9 @@
 'use strict';
 
 var React = require('react/addons'),
-    MessageList = require('./MessageList'),
-    Loading = require('./Loading'),
-    Title = require('./Title'),
-    DatePicker = require('./DatePicker'),
+    Tabs = require('./Tabs'),
+    Stats = require('./Stats'),
+    Logs = require('./Logs'),
     $ = require('jquery');
 
 require('normalize.css');
@@ -14,91 +13,27 @@ require('../styles/main.less');
 var IrcLogsApp = React.createClass({
     getInitialState : function() {
         return {
-            connected : false,
-            messages  : [],
-            loaded    : false,
-            days      : 0
+            selected : 'logs'
         };
     },
-    initList : function() {
-        this.loadHistoricFromServer();
-
-        if(this.eventSource !== undefined && this.eventSource.readyState !== EventSource.CLOSED) {
-            this.setState({connected : true});
-            return;
-        }
-
-        this.eventSource = new EventSource('/subscribe');
-
-        this.eventSource.addEventListener('message', (function(e) {
-            console.log('Got message', e.data);
-            this.addMessage(e.data);
-        }).bind(this), false);
-
-        this.eventSource.addEventListener('open', (function(e) {
-            console.log('Connected to server');
-            this.setState({connected : true});
-        }).bind(this), false);
-
-        this.eventSource.addEventListener('error', (function(e) {
-            if (e.target.readyState === EventSource.CLOSED) {
-                console.log('Diconnected from server');
-                this.setState({connected : false});
-            }
-        }).bind(this), false);
-    },
-    addMessage : function(message) {
-        var messages = this.state.messages;
-        messages.push(JSON.parse(message));
-        this.setState({messages : messages});
-    },
-    componentWillMount : function() {
-        this.initList();
-    },
     render : function() {
-        if(this.state.loaded) {
-            return (
-                <div>
-                    <Title connected={this.state.connected} days={this.state.days}/>
-                    <DatePicker dateChangeCallback={this.dateChangeCallback}/>
-                    <MessageList messages={this.state.messages}/>
-                </div>
-            );
-        } else {
-            return (
-                <div>
-                    <Title connected={this.state.connected} days={this.state.days}/>
-                    <Loading />
-                </div>
-            );
+        var content;
+
+        if(this.state.selected === 'stats') {
+            content = (<Stats />);
+        } else if(this.state.selected === 'logs') {
+            content = (<Logs />);
         }
 
+        return (
+            <div>
+                <Tabs selected={this.state.selected} tabClickCallback={this.onTabClick} />
+                {content}
+            </div>
+        );
     },
-    dateChangeCallback : function(days) {
-        this.setState({
-            days      : days,
-            loaded    : false,
-            connected : false
-        });
-
-        if(days === 0) {
-            return this.initList();
-        }
-
-        var currentDate = new Date(),
-            fromDate = new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - days),
-            toDate = new Date(currentDate.getUTCFullYear(), currentDate.getUTCMonth(), currentDate.getUTCDate() - days + 1);
-
-        this.eventSource.close();
-        this.loadHistoricFromServer(fromDate, toDate);
-    },
-    loadHistoricFromServer : function(from, to) {
-        $.get('/load', {from : from ? from.toISOString() : undefined, to : to ? to.toISOString() : undefined}, (function(results) {
-            this.setState({
-                loaded   : true,
-                messages : results
-            });
-        }).bind(this));
+    onTabClick : function(tab) {
+        this.setState({selected: tab});
     }
 });
 

@@ -1,0 +1,11 @@
+@import "Conf.less";
+
+.StatsTopEntry {
+    counter-increment: top-spammer-counter;
+}
+
+.StatsTopEntry::before {
+    content: counter(top-spammer-counter) + ".";
+    margin-right: 5px;
+    color: @medium-color;
+}

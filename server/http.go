@@ -25,10 +25,17 @@ func NewHTTP(history *ElasticHistory, port int) *HTTP {
 
 	http.HandleFunc("/subscribe", h.eventSrcSrv.Handler("message"))
 	http.HandleFunc("/load", h.getLoadHandler())
+	http.HandleFunc("/stats/histogram", h.getStatsHistogramHandler())
+	http.HandleFunc("/stats/top", h.getStatsTopHandler())
 
 	return h
 }
-
+func errorResponse(tag string, err error, w http.ResponseWriter) {
+	log.Printf("%s : Error %e", tag, err)
+	errStr, _ := json.Marshal(map[string]string{"error": "try again"})
+	w.WriteHeader(500)
+	w.Write(errStr)
+}
 func (h *HTTP) getLoadHandler() func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		from := r.URL.Query().Get("from")
@@ -47,16 +54,43 @@ func (h *HTTP) getLoadHandler() func(w http.ResponseWriter, r *http.Request) {
 		messages, err := h.history.GetMessagesBetween(from, to)
 
 		if err != nil {
-			errStr, _ := json.Marshal(map[string]string{"error": "try again"})
-			log.Printf("Error : %e while fetching history from elasticsearch\n", err)
-			w.WriteHeader(500)
-			w.Write(errStr)
+			errorResponse("getLoadHandler", err, w)
 			return
 		}
 
 		w.Header().Set("Content-type", "application/json")
 		w.WriteHeader(200)
 		w.Write(messages)
+	}
+}
+
+func (h *HTTP) getStatsHistogramHandler() func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		res, err := h.history.GetDailyHistogram("now-30d", "now")
+
+		if err != nil {
+			errorResponse("getStatsHistogramHandler", err, w)
+			return
+		}
+
+		w.Header().Set("Content-type", "application/json")
+		w.WriteHeader(200)
+		w.Write(res)
+	}
+}
+
+func (h *HTTP) getStatsTopHandler() func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		res, err := h.history.GetUserMessageCount("now-24h", "now")
+
+		if err != nil {
+			errorResponse("getStatsTopHandler", err, w)
+			return
+		}
+
+		w.Header().Set("Content-type", "application/json")
+		w.WriteHeader(200)
+		w.Write(res)
 	}
 }
 

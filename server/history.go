@@ -6,11 +6,23 @@ import (
 	"log"
 	"reflect"
 	"strings"
+	"time"
 )
 
 const (
 	TYPE string = "irc"
 )
+
+type histogramResult struct {
+	Key      int64  `json:"key"`
+	DocCount int64  `json:"docCount"`
+	Date     string `json:"date"`
+}
+
+type termResult struct {
+	Key      string `json:"key"`
+	DocCount int64  `json:"docCount"`
+}
 
 type ElasticHistory struct {
 	host             string
@@ -66,6 +78,80 @@ func (history *ElasticHistory) GetMessagesBetween(from, to string) ([]byte, erro
 
 	return json.Marshal(resultSlice)
 
+}
+
+func (history *ElasticHistory) GetDailyHistogram(from, to string) ([]byte, error) {
+	dailyAggregation := elastic.NewDateHistogramAggregation().
+		Field("date").
+		Interval("day").
+		Format("dd.MM.YYYY")
+
+	rangeQuery := elastic.NewRangeQuery("date").From(from).To(to)
+
+	searchResult, err := history.client.Search().
+		Index(history.index).
+		Type(TYPE).
+		Query(rangeQuery).
+		Size(0).
+		Aggregation("histogram", dailyAggregation).
+		Do()
+
+	if err != nil {
+		return nil, err
+	}
+
+	hist, _ := searchResult.Aggregations.Histogram("histogram")
+
+	log.Printf("In total there are %d buckets", len(hist.Buckets))
+
+	aggRes := make([]histogramResult, 30, 30)
+	tDate := time.Now()
+	tY, tM, tD := tDate.Date()
+
+	d := time.Date(tY, tM, tD, 0, 0, 0, 0, time.UTC)
+
+	for i := 0; i < 30; i++ { //aggregation results are for last 30days and for frontend they are prefilled
+		aggRes[30-i-1] = histogramResult{Key: d.Unix(), DocCount: 0, Date: d.Format("02.01.2006")}
+		d = d.Add(-24 * time.Hour)
+	}
+
+	for _, agg := range hist.Buckets {
+		for i := 0; i < 30; i++ {
+			if aggRes[i].Date == *agg.KeyAsString {
+				aggRes[i].DocCount = agg.DocCount
+				break
+			}
+		}
+	}
+
+	return json.Marshal(aggRes)
+}
+
+func (history *ElasticHistory) GetUserMessageCount(from, to string) ([]byte, error) {
+	termAggregation := elastic.NewTermsAggregation().Field("from")
+	rangeQuery := elastic.NewRangeQuery("date").From(from).To(to)
+
+	searchResult, err := history.client.Search().
+		Index(history.index).
+		Type(TYPE).
+		Query(rangeQuery).
+		Size(0).
+		Aggregation("top", termAggregation).
+		Do()
+
+	if err != nil {
+		return nil, err
+	}
+
+	resultAggr, _ := searchResult.Aggregations.Terms("top")
+
+	outputResult := make([]termResult, len(resultAggr.Buckets), len(resultAggr.Buckets))
+
+	for i, r := range resultAggr.Buckets {
+		outputResult[i] = termResult{Key: r.Key.(string), DocCount: r.DocCount}
+	}
+
+	return json.Marshal(outputResult)
 }
 
 func reverseHistory(result []Message) {
