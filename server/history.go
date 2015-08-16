@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/olivere/elastic"
 	"log"
 	"reflect"
@@ -61,6 +62,10 @@ func (history *ElasticHistory) GetMessagesBetween(from, to string) ([]byte, erro
 
 	if err != nil {
 		return nil, err
+	}
+
+	if result.Error != "" {
+		return nil, errors.New(result.Error)
 	}
 
 	resultCnt := len(result.Hits.Hits)
@@ -129,7 +134,11 @@ func (history *ElasticHistory) GetDailyHistogram(from, to string) ([]byte, error
 
 func (history *ElasticHistory) GetUserMessageCount(from, to string) ([]byte, error) {
 	termAggregation := elastic.NewTermsAggregation().Field("from")
-	rangeQuery := elastic.NewRangeQuery("date").From(from).To(to)
+	rangeQuery := elastic.NewRangeQuery("date")
+
+	if from != "" && to != "" {
+		rangeQuery = rangeQuery.From(from).To(to)
+	}
 
 	searchResult, err := history.client.Search().
 		Index(history.index).

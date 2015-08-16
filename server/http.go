@@ -26,7 +26,8 @@ func NewHTTP(history *ElasticHistory, port int) *HTTP {
 	http.HandleFunc("/subscribe", h.eventSrcSrv.Handler("message"))
 	http.HandleFunc("/load", h.getLoadHandler())
 	http.HandleFunc("/stats/histogram", h.getStatsHistogramHandler())
-	http.HandleFunc("/stats/top", h.getStatsTopHandler())
+	http.HandleFunc("/stats/top24h", h.getStatsTopHandler("now-24h", "now"))
+	http.HandleFunc("/stats/overall", h.getStatsTopHandler("", ""))
 
 	return h
 }
@@ -79,9 +80,9 @@ func (h *HTTP) getStatsHistogramHandler() func(w http.ResponseWriter, r *http.Re
 	}
 }
 
-func (h *HTTP) getStatsTopHandler() func(w http.ResponseWriter, r *http.Request) {
+func (h *HTTP) getStatsTopHandler(from, to string) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		res, err := h.history.GetUserMessageCount("now-24h", "now")
+		res, err := h.history.GetUserMessageCount(from, to)
 
 		if err != nil {
 			errorResponse("getStatsTopHandler", err, w)

@@ -11,7 +11,8 @@ var Stats = React.createClass({
         return (
             <div className="Stats">
               <Histogram />
-              <Top />
+              <Top endpoint="top24h" title="Top spammers in last 24h" />
+              <Top endpoint="overall" title="Top overall spammers" />
             </div>
           );
     }

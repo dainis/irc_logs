@@ -15,7 +15,7 @@ var StatsTop = React.createClass({
         };
     },
     componentWillMount : function() {
-        $.get('/stats/top', (function(data) {
+        $.get('/stats/' + this.props.endpoint, (function(data) {
             this.setState({loaded : true, top: data});
         }).bind(this));
     },
@@ -36,7 +36,7 @@ var StatsTop = React.createClass({
         }
         return (
             <div className="StatsTop">
-                <h2>Top spammers in last 24h</h2>
+                <h2>{this.props.title}</h2>
                 {content}
             </div>
         );
